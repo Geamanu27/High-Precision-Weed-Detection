@@ -1,0 +1,573 @@
+\documentclass[12pt,a4paper]{report}
+
+% -------------------- Packages --------------------
+\usepackage[margin=2.5cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{setspace}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{amsmath}
+\usepackage{siunitx}
+\usepackage{hyperref}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{longtable}
+\usepackage{enumitem}
+
+\onehalfspacing
+
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  urlcolor=blue!60!black,
+  citecolor=black,
+  pdftitle={Comparative Evaluation of YOLOv8 Models for High-Precision Weed Detection},
+  pdfauthor={Your Name}
+}
+
+\begin{document}
+
+% -------------------- Title Page --------------------
+\begin{titlepage}
+    \centering
+    {\Large\bfseries Comparative Evaluation of YOLOv8 Models for High-Precision Weed Detection in Rose Fields\par}
+    \vspace{1.5cm}
+    \vspace{1.5cm}
+    {\large Date: \today\par}
+    \vfill
+\end{titlepage}
+
+\tableofcontents
+\clearpage
+
+% -------------------- Chapter 1 --------------------
+\chapter{Introduction}
+
+The goal of this research project is to design and evaluate deep learning models capable of high-precision weed detection in rose plantations. This task is particularly challenging due to:
+\begin{itemize}[noitemsep]
+    \item Dense and overlapping vegetation;
+    \item Visual similarity between weeds and rose stems/leaves;
+    \item Strong lighting variation in outdoor conditions;
+    \item The need for pixel-accurate localization, not just object detection.
+\end{itemize}
+
+To address these challenges, four YOLOv8 architectures were trained and compared on agricultural imagery containing two classes:
+\begin{itemize}[noitemsep]
+    \item Class 0: weed;
+    \item Class 1: rose.
+\end{itemize}
+
+The four architectures are:
+\begin{itemize}[noitemsep]
+    \item YOLOv8n (bounding box detection);
+    \item YOLOv8s (bounding box detection);
+    \item YOLOv8n-seg (instance segmentation);
+    \item YOLOv8s-seg (instance segmentation).
+\end{itemize}
+
+Both quantitative performance metrics and qualitative mask precision were analyzed to determine the best-suited model for robotic deployment and real-time inference in precision agriculture.
+
+\section{YOLOv8 Model Families}
+
+\subsection*{Model Size}
+\begin{itemize}[noitemsep]
+    \item \textbf{YOLOv8n (Nano)}: Fastest and lightest; suitable for embedded and robotic platforms.
+    \item \textbf{YOLOv8s (Small)}: Larger and typically more accurate, but slower and more resource-demanding.
+\end{itemize}
+
+\subsection*{Task Types}
+\begin{itemize}[noitemsep]
+    \item \textbf{Bounding Box Detection (BB)}: Outputs rectangular boxes around weeds and roses; good for coarse localization and counting.
+    \item \textbf{Instance Segmentation (Seg)}: Outputs pixel-level masks; crucial for high-precision weed localization and shape analysis.
+\end{itemize}
+
+Instance segmentation is especially appealing in this project because the core requirement is high-precision weed localization and robust separation between weeds and rose plants.
+
+\clearpage
+
+% -------------------- Chapter 2 --------------------
+\chapter{Datasets and Splits}
+
+All models are trained on real agricultural images of rose rows with weeds growing around and between the plants.
+
+\section{Task and Domain}
+
+\begin{itemize}[noitemsep]
+    \item Domain: detection and segmentation of weeds and roses in outdoor rose fields.
+    \item Classes: 0 -- weed, 1 -- rose.
+    \item Conditions: varying lighting, occlusions, overlapping plants and cluttered backgrounds.
+\end{itemize}
+
+\section{Dataset Splits per Model}
+
+\subsection*{YOLOv8n: Detection vs Segmentation}
+
+\begin{table}[H]
+    \centering
+    \small
+    \caption{Dataset splits for YOLOv8n and YOLOv8n-seg}
+    \begin{tabular}{@{}p{3cm}p{4cm}p{3.5cm}p{3.5cm}@{}}
+        \toprule
+        Model & Task Type & Train Images & Validation Images \\
+        \midrule
+        YOLOv8n & Object Detection (Bounding Boxes) & 180 & 26 \\
+        YOLOv8n-seg & Instance Segmentation (Masks) & 70 & 21 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+The segmentation dataset is markedly smaller, which naturally reduces its achievable mAP compared to detection.
+
+\subsection*{YOLOv8s: Detection vs Segmentation}
+
+\begin{table}[H]
+    \centering
+    \small
+    \caption{Dataset splits for YOLOv8s and YOLOv8s-seg}
+    \begin{tabular}{@{}p{3cm}p{4cm}p{3.5cm}p{3.5cm}@{}}
+        \toprule
+        Model & Task Type & Train Images & Validation Images \\[2pt]
+        \midrule
+        YOLOv8s & Object Detection (Bounding Boxes) & 180 & 26 \\
+        YOLOv8s-seg & Instance Segmentation (Masks) & 71 & 20 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+Again, the segmentation dataset contains fewer images than its detection counterpart.
+
+\section{Combined Model Overview}
+
+Table \ref{tab:combined-models} summarizes all four models and their tasks.
+
+\begin{table}[H]
+    \centering
+    \small
+    \caption{Overview of YOLOv8 models evaluated}
+    \label{tab:combined-models}
+    \begin{tabular}{@{}p{4cm}p{4cm}p{6cm}@{}}
+        \toprule
+        Model & Size Variant & Task Type \\
+        \midrule
+        YOLOv8n & Nano & Bounding box detection \\
+        YOLOv8s & Small & Bounding box detection \\
+        YOLOv8n-seg & Nano & Instance segmentation \\
+        YOLOv8s-seg & Small & Instance segmentation \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\clearpage
+
+% -------------------- Chapter 3 --------------------
+\chapter{Training Configuration}
+
+All experiments were performed on a GPU (CUDA device 0), using similar hyperparameters to ensure fair comparison.
+
+\section{YOLOv8n vs YOLOv8n-seg Configuration}
+
+\begin{table}[H]
+    \centering
+    \small
+    \caption{Training configuration for YOLOv8n and YOLOv8n-seg}
+    \begin{tabular}{@{}p{3cm}p{5.5cm}p{5.5cm}@{}}
+        \toprule
+        Parameter & YOLOv8n & YOLOv8n-seg \\
+        \midrule
+        Base model         & \texttt{yolov8n.pt} & \texttt{yolov8n-seg.pt} \\
+        Epochs             & 120                 & 120 \\
+        Image size         & 1024$\times$1024    & 1024$\times$1024 \\
+        Batch size         & 9                   & 9 \\
+        Device             & GPU (CUDA 0)        & GPU (CUDA 0) \\
+        Seed               & 42                  & 42 \\
+        Patience           & 25                  & 25 \\
+        Augmentations      & Albumentations (MotionBlur, MedianBlur, RandomBrightnessContrast, CLAHE, ToGray, ImageCompression, GaussNoise) + YOLO built-ins (HSV, rotation, scaling, flipping, mosaic, mixup) & Same Albumentations + YOLO built-ins \\
+        Optimizer settings & \texttt{cls=1.0}, \texttt{weight\_decay=0.001}, \texttt{lrf=0.0005} & Same as detection run \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\section{YOLOv8s vs YOLOv8s-seg Configuration}
+
+\begin{table}[H]
+    \centering
+    \small
+    \caption{Training configuration for YOLOv8s and YOLOv8s-seg}
+    \begin{tabular}{@{}p{3cm}p{5.5cm}p{5.5cm}@{}}
+        \toprule
+        Parameter & YOLOv8s (Detection) & YOLOv8s-seg (Segmentation) \\
+        \midrule
+        Base model         & \texttt{yolov8s.pt}      & \texttt{yolov8s-seg.pt} \\
+        Epochs             & 120                     & 120 \\
+        Image size         & 1280$\times$1280        & 1280$\times$1280 \\
+        Batch size         & 6                       & 4 \\
+        Device             & GPU (CUDA 0)            & GPU (CUDA 0) \\
+        Seed               & 42                      & 42 \\
+        Patience           & 25                      & 25 \\
+        Augmentations      & Albumentations (MotionBlur, MedianBlur, RandomBrightnessContrast, CLAHE, ToGray, ImageCompression, GaussNoise) + YOLO built-ins (HSV, rotation, scaling, flipping, mosaic, mixup) & Same augmentation pipeline \\
+        Optimizer settings & \texttt{cls=1.0}, \texttt{weight\_decay=0.001}, \texttt{lrf=0.0005} & Same as detection run \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\clearpage
+
+% -------------------- Chapter 4 --------------------
+\chapter{YOLOv8n: Detection vs Segmentation}
+
+\section{Quantitative Results}
+
+\subsection{Training Metrics Evolution}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/yolov8n.png}
+    \caption{Training and validation metrics for YOLOv8n (detection).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/yolov8n-seg.png}
+    \caption{Training and validation metrics for YOLOv8n-seg (instance segmentation).}
+\end{figure}
+
+\subsection{Loss Convergence}
+
+All key loss components (box loss, classification loss, distribution focal loss, and segmentation loss for the seg model) show smooth decline, indicating stable optimization. There is no sign of divergence or extreme overfitting.
+
+\subsection{Precision, Recall, and mAP}
+
+For YOLOv8n (detection), precision stabilizes around 0.65--0.75 and recall around 0.55--0.60. For YOLOv8n-seg, precision is slightly more stable but not dramatically higher, and recall is of similar magnitude.
+
+Corrected mean average precision (mAP) values based on the training logs are:
+\begin{itemize}[noitemsep]
+    \item YOLOv8n (detection):
+        \begin{itemize}[noitemsep]
+            \item mAP@50 $\approx 0.80$--$0.82$;
+            \item mAP@50--95 $\approx 0.34$.
+        \end{itemize}
+    \item YOLOv8n-seg (segmentation):
+        \begin{itemize}[noitemsep]
+            \item mAP@50 $\approx 0.31$--$0.33$;
+            \item mAP@50--95 $\approx 0.21$--$0.22$.
+        \end{itemize}
+\end{itemize}
+
+Segmentation yields lower mAP due to the harder task and smaller dataset, but provides superior object boundary definition.
+
+\section{Qualitative Evaluation on Unseen Images}
+
+Both models were evaluated on unseen field images not used in training or validation.
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/yolov8n-IMG_4283.jpg}
+        \caption*{YOLOv8n prediction.}
+    \end{minipage}\hfill
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/yolov8n-seg-IMG_4283.jpg}
+        \caption*{YOLOv8n-seg prediction.}
+    \end{minipage}
+    \caption{Qualitative comparison between YOLOv8n and YOLOv8n-seg on an unseen image.}
+\end{figure}
+
+The segmentation model accurately outlines plant contours and clearly separates weeds from roses, although very thin branches may still be partially missed. The bounding-box model tends to merge adjacent weeds and produces more false positives in cluttered soil regions.
+
+\section{Comparative Summary}
+
+\begin{table}[H]
+    \centering
+    \small
+    \caption{YOLOv8n vs YOLOv8n-seg: summary of performance characteristics}
+    \begin{tabular}{@{}p{3.4cm}p{3.4cm}p{3.4cm}p{3.4cm}@{}}
+        \toprule
+        Aspect & YOLOv8n (Det.) & YOLOv8n-seg (Seg.) & Verdict \\
+        \midrule
+        Localization type & Bounding boxes & Pixel-level polygons & Segmentation more detailed \\
+        Small weed detection & Good & Better & Segmentation wins \\
+        Background noise & Moderate & Reduced & Segmentation wins \\
+        Precision / Recall & 0.65 / 0.58 & 0.68 / 0.60 (more stable) & Slight edge for segmentation \\
+        mAP@50--95 & $\approx 0.34$ & $\approx 0.22$ & Detection higher \\
+        Visual interpretability & Moderate & High & Segmentation clearly better \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\section{Conclusions for YOLOv8n}
+
+YOLOv8n-seg provides significantly better localization precision and clearer separation between weeds and roses, at the cost of lower mAP driven by the smaller dataset and the inherent difficulty of instance segmentation. YOLOv8n (detection) remains the stronger model in terms of pure mAP and should be considered the baseline for detection-only use cases.
+
+\clearpage
+
+% -------------------- Chapter 5 --------------------
+\chapter{YOLOv8s: Detection vs Segmentation}
+
+\section{Quantitative Results}
+
+\subsection{Training Metrics Evolution}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/yolov8s.png}
+    \caption{Training and validation metrics for YOLOv8s (detection).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/yolov8s-seg.png}
+    \caption{Training and validation metrics for YOLOv8s-seg (segmentation).}
+\end{figure}
+
+\subsection{Loss Convergence}
+
+Both YOLOv8s and YOLOv8s-seg show steady and smooth convergence across all loss components. The segmentation model includes an additional segmentation loss term, which decreases consistently and indicates stable learning of masks. No severe overfitting is present.
+
+\subsection{Precision, Recall, and mAP}
+
+For YOLOv8s (detection), precision stabilizes around 0.70--0.75 and recall around 0.60--0.70. For YOLOv8s-seg, precision is less stable and recall remains around 0.30--0.35, reflecting the smaller dataset and higher complexity of segmentation.
+
+Corrected mAP values:
+\begin{itemize}[noitemsep]
+    \item YOLOv8s:
+    \begin{itemize}[noitemsep]
+        \item mAP@50 $\approx 0.80$--$0.82$;
+        \item mAP@50--95 $\approx 0.32$--$0.34$.
+    \end{itemize}
+    \item YOLOv8s-seg:
+    \begin{itemize}[noitemsep]
+        \item mAP@50 $\approx 0.30$--$0.33$;
+        \item mAP@50--95 $\approx 0.21$--$0.23$.
+    \end{itemize}
+\end{itemize}
+
+\section{Qualitative Evaluation on Unseen Images}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/yolov8s-IMG_4283.jpg}
+        \caption*{YOLOv8s prediction.}
+    \end{minipage}\hfill
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/yolov8s-seg-IMG_4283.jpg}
+        \caption*{YOLOv8s-seg prediction.}
+    \end{minipage}
+    \caption{Qualitative comparison between YOLOv8s and YOLOv8s-seg on an unseen image.}
+\end{figure}
+
+The detection model produces accurate bounding boxes for most plants but sometimes merges dense clusters. The segmentation model yields clearer shape boundaries and is visually far more informative for plant-level analysis, although it struggles with very thin stems and heavily overlapping leaves.
+
+\section{Comparative Summary}
+
+\begin{table}[H]
+    \centering
+    \small
+    \caption{YOLOv8s vs YOLOv8s-seg: summary of performance characteristics}
+    \begin{tabular}{@{}p{3.4cm}p{3.4cm}p{3.4cm}p{3.4cm}@{}}
+        \toprule
+        Aspect & YOLOv8s (Detection) & YOLOv8s-seg (Segmentation) & Verdict \\ 
+        \midrule
+        Training set size & 180 & 71 & -- \\
+        Validation set size & 26 & 20 & -- \\
+        Localization type & Bounding boxes & Pixel-level masks & Segmentation more detailed \\ 
+        Precision / Recall & 0.72 / 0.65 & 0.65 / 0.32 & Detection more stable \\
+        mAP@50--95 & $\approx 0.33$ & $\approx 0.22$ & Detection higher \\
+        Qualitative boundary detail & Moderate & High & Segmentation superior \\
+        Generalization & Strong & Moderate & Detection more robust \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\section{Conclusions for YOLOv8s}
+
+YOLOv8s achieves significantly higher mAP and stronger precision/recall than YOLOv8s-seg, largely due to the larger training dataset and simpler detection objective. YOLOv8s-seg, however, offers richer region-level details and is better suited for tasks that require pixel-precise understanding of plant geometry, such as biomass estimation or detailed crop diagnostics.
+
+\clearpage
+
+% -------------------- Chapter 6 --------------------
+\chapter{Cross-Model Comparative Evaluation}
+
+This chapter compares all four models jointly: YOLOv8n, YOLOv8s, YOLOv8n-seg, and YOLOv8s-seg.
+
+\section{Global Quantitative Comparison}
+
+\subsection{mAP@50--95}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/mAP50-95.png}
+    \caption{Validation mAP@50--95 for YOLOv8n, YOLOv8s, YOLOv8n-seg, and YOLOv8s-seg.}
+    \label{fig:map5095}
+\end{figure}
+
+Key observations:
+\begin{itemize}[noitemsep]
+    \item Bounding-box models (YOLOv8n, YOLOv8s) achieve the highest overall mAP@50--95;
+    \item YOLOv8n (detection) reaches a peak mAP@50--95 of about $0.349$ (epoch 85);
+    \item YOLOv8s (detection) closely follows with a peak around $0.342$ (epoch 66);
+    \item YOLOv8s-seg reaches roughly $0.23$ (epoch 41);
+    \item YOLOv8n-seg reaches approximately $0.22$ (epoch 97);
+    \item Segmentation models stabilize earlier but plateau at lower mAP levels.
+\end{itemize}
+
+\subsection{mAP@50}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/mAP_50.png}
+    \caption{Validation mAP@50 for YOLOv8n, YOLOv8s, YOLOv8n-seg, and YOLOv8s-seg.}
+\end{figure}
+
+Key observations:
+\begin{itemize}[noitemsep]
+    \item YOLOv8n and YOLOv8s both exceed $0.80$ in mAP@50, confirming strong detection performance;
+    \item Segmentation models remain in the $0.30$--$0.35$ range for mAP@50;
+    \item The gap between detection and segmentation is partly due to smaller segmentation datasets and the more challenging supervision.
+\end{itemize}
+
+\subsection{Losses: Segmentation, Classification, and Box}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/seg_loss.png}
+    \caption{Segmentation loss (train vs val) for the segmentation models.}
+\end{figure}
+
+Segmentation models converge smoothly after roughly 20 epochs. YOLOv8s-seg slightly improves in final segmentation loss, but it exhibits weaker classification behavior.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/class_loss.png}
+    \caption{Classification loss (train vs val) across models.}
+\end{figure}
+
+\begin{itemize}[noitemsep]
+    \item YOLOv8n-seg yields the lowest classification loss of all four models, stabilizing around $1.1$;
+    \item This suggests that YOLOv8n-seg is particularly strong at distinguishing weeds from roses, despite lower mAP.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/box_loss.png}
+    \caption{Box loss (train vs val) across models.}
+\end{figure}
+
+Segmentation models exhibit consistently lower box loss than detection models. YOLOv8s (detection) shows more fluctuations and a higher average box loss, indicating that segmentation better captures precise weed and rose boundaries.
+
+\section{Model Strengths and Weaknesses}
+
+\subsection{Bounding Box Models (YOLOv8n, YOLOv8s)}
+
+\textbf{Pros:}
+\begin{itemize}[noitemsep]
+    \item Highest mAP performance (both around $0.34$ in mAP@50--95);
+    \item Stable learning curves;
+    \item Excellent at detecting and differentiating weeds vs roses at object level;
+    \item Suitable for real-time inference over large areas.
+\end{itemize}
+
+\textbf{Cons:}
+\begin{itemize}[noitemsep]
+    \item Bounding boxes are coarse and may include parts of neighboring plants;
+    \item Less suited for precise weed extraction or pixel-level robotics;
+    \item Risk of merging clusters of plants into single detections.
+\end{itemize}
+
+\subsection{Segmentation Models (YOLOv8n-seg, YOLOv8s-seg)}
+
+\textbf{Pros:}
+\begin{itemize}[noitemsep]
+    \item Pixel-level weed boundaries;
+    \item Superior separation in cluttered plant regions;
+    \item Useful for weed size estimation, mask area computation, and biomass analysis;
+    \item YOLOv8n-seg has the best classifier behavior (lowest classification loss).
+\end{itemize}
+
+\textbf{Cons:}
+\begin{itemize}[noitemsep]
+    \item Lower mAP values due to smaller datasets and harder objectives;
+    \item Slightly slower inference time;
+    \item YOLOv8s-seg shows weaker classification stability and is slower than YOLOv8n-seg.
+\end{itemize}
+
+\section{Global Summary Table}
+
+\begin{table}[H]
+    \centering
+    \small
+    \caption{Global comparison of YOLOv8 models}
+    \begin{tabular}{@{}p{2cm}p{1.5cm}p{2.8cm}p{3.2cm}p{1.5cm}p{3.0cm}@{}}
+        \toprule
+        Model & Task & Peak mAP@50--95 & Qualitative Precision & Speed & Suitability \\
+        \midrule
+        YOLOv8n     & BB   & $\sim 0.349$ & Good          & 5/5 & Best baseline \\
+        YOLOv8s     & BB   & $\sim 0.342$ & Very good     & 4/5 & Strong detection \\
+        YOLOv8n-seg & Seg  & $\sim 0.22$  & Excellent     & 5/5 & Best overall choice for precision \\
+        YOLOv8s-seg & Seg  & $\sim 0.23$  & Good          & 3/5 & Good but slower \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\clearpage
+
+% -------------------- Chapter 7 --------------------
+\chapter{Discussion and Final Conclusion}
+
+\section{Best Model per Objective}
+
+There is a clear trade-off between detection accuracy (as measured by mAP) and localization precision (as measured qualitatively by segmentation masks and box loss).
+
+\subsection*{Detection-Oriented Objectives}
+
+For large-scale monitoring, counting, or coarse weed mapping, the bounding-box models (YOLOv8n and YOLOv8s) are preferred:
+\begin{itemize}[noitemsep]
+    \item Both achieve high mAP@50 and mAP@50--95;
+    \item They generalize well to unseen images;
+    \item They are efficient and easy to deploy on real-time systems.
+\end{itemize}
+
+\subsection*{Precision-Oriented Objectives}
+
+For high-precision weed localization and tasks that require pixel-level understanding (robotic weed removal, detailed crop analytics), segmentation models are more appropriate:
+\begin{itemize}[noitemsep]
+    \item YOLOv8n-seg offers the best combination of classification robustness, boundary precision, and speed;
+    \item YOLOv8s-seg provides strong mask quality but is slower and exhibits less stable classification behavior.
+\end{itemize}
+
+\section{Final Recommendation}
+
+Given the main research requirement:
+\begin{quote}
+    ``High-precision weed localization and reliable distinction between weeds and rose plants.''
+\end{quote}
+
+the recommended model is:
+
+\begin{center}
+    \textbf{YOLOv8n-seg}
+\end{center}
+
+YOLOv8n-seg stands out because:
+\begin{itemize}[noitemsep]
+    \item It achieves the lowest classification loss among all models, making it highly reliable at distinguishing weeds from roses;
+    \item As a nano-sized model, it is lightweight and fast, well-suited for real-time robotic deployment in fields;
+    \item Its mAP@50--95 of about $0.22$ is only slightly lower than YOLOv8s-seg, while offering clear advantages in speed and classifier stability;
+    \item It demonstrates consistently low segmentation and box losses with smooth convergence behavior.
+\end{itemize}
+
+Although YOLOv8s-seg achieves marginally higher mAP, YOLOv8n-seg is the clear overall winner when speed, classifier robustness, and pixel-precise weed localization are considered together. YOLOv8n (detection) should be maintained as a strong detection baseline but does not fully meet the high-precision localization requirements of this project.
+
+\section{Summary}
+
+This report has presented a comparative evaluation of four YOLOv8 models (n, s, n-seg, s-seg) for high-precision weed detection in rose fields. By combining quantitative metrics (mAP, precision, recall, and loss curves) with qualitative mask analysis on unseen images, the study concludes that instance segmentation---in particular YOLOv8n-seg---offers the most suitable balance of precision, robustness, and efficiency for precision agriculture applications focusing on weed control in dense rose foliage.
+
+\end{document}

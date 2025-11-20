@@ -1,0 +1,117 @@
+task: detect
+mode: train
+model: yolov8n.pt
+data: D:\Ai Systems Group\data\weeds_yolo\data.yaml
+epochs: 120
+time: null
+patience: 25
+batch: 9
+imgsz: 1024
+save: true
+save_period: -1
+cache: false
+device: '0'
+workers: 5
+project: D:\Ai Systems Group\work_dirs
+name: yolov8n-weeds
+exist_ok: false
+pretrained: true
+optimizer: auto
+verbose: true
+seed: 42
+deterministic: true
+single_cls: false
+rect: false
+cos_lr: false
+close_mosaic: 10
+resume: false
+amp: true
+fraction: 1.0
+profile: false
+freeze: null
+multi_scale: false
+compile: false
+overlap_mask: true
+mask_ratio: 4
+dropout: 0.0
+val: true
+split: val
+save_json: false
+conf: null
+iou: 0.7
+max_det: 300
+half: false
+dnn: false
+plots: true
+source: null
+vid_stride: 1
+stream_buffer: false
+visualize: false
+augment: false
+agnostic_nms: false
+classes: null
+retina_masks: false
+embed: null
+show: false
+save_frames: false
+save_txt: false
+save_conf: false
+save_crop: false
+show_labels: true
+show_conf: true
+show_boxes: true
+line_width: null
+format: torchscript
+keras: false
+optimize: false
+int8: false
+dynamic: false
+simplify: true
+opset: null
+workspace: null
+nms: false
+lr0: 0.01
+lrf: 0.001
+momentum: 0.937
+weight_decay: 0.001
+warmup_epochs: 3.0
+warmup_momentum: 0.8
+warmup_bias_lr: 0.1
+box: 7.5
+cls: 1.0
+dfl: 1.5
+pose: 12.0
+kobj: 1.0
+nbs: 64
+hsv_h: 0.015
+hsv_s: 0.5
+hsv_v: 0.35
+degrees: 15.0
+translate: 0.06
+scale: 0.2
+shear: 5.0
+perspective: 0.0
+flipud: 0.0
+fliplr: 0.5
+bgr: 0.0
+mosaic: 0.5
+mixup: 0.1
+cutmix: 0.0
+copy_paste: 0.0
+copy_paste_mode: flip
+auto_augment: randaugment
+erasing: 0.4
+cfg: null
+tracker: botsort.yaml
+augmentations:
+- MotionBlur(p=0.02, allow_shifted=True, angle_range=(0.0, 360.0), blur_limit=(3,
+  5), direction_range=(-1.0, 1.0))
+- MedianBlur(p=0.02, blur_limit=(3, 5))
+- RandomBrightnessContrast(p=0.5, brightness_by_max=True, brightness_limit=(-0.15,
+  0.15), contrast_limit=(-0.15, 0.15), ensure_safe_range=False)
+- CLAHE(p=0.3, clip_limit=(1.0, 3.0), tile_grid_size=(8, 8))
+- ToGray(p=0.05, method='weighted_average', num_output_channels=3)
+- ImageCompression(p=0.2, compression_type='jpeg', quality_range=(70, 100))
+- GaussNoise(p=0.15, mean_range=(0.0, 0.0), noise_scale_factor=1.0, per_channel=True,
+  std_range=(0.01240108886340541, 0.02480217772681082))
+save_dir: D:\Ai Systems Group\work_dirs\yolov8n-weeds
