@@ -1,0 +1,6 @@
+path: D:/Ai Systems Group/data/weeds_yolo
+train: D:\Ai Systems Group\data\weeds_yolo\train_boosted_rose_3x.txt
+val: images/val
+names:
+  0: Rose
+  1: Weed

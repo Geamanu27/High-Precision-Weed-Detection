@@ -1,0 +1,9 @@
+# D:/Ai Systems Group/data/weeds_yolo/data.yaml
+path: D:/Ai Systems Group/data/weeds_yolo   # root that contains images/ and labels/
+train: images/train
+val: images/val
+# test: images/test        # (optional) add if you have it
+
+names:
+  0: Rose
+  1: Weed

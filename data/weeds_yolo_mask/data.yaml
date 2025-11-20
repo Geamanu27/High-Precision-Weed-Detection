@@ -1,0 +1,10 @@
+# YOLO dataset configuration
+path: D:/Ai Systems Group/data/weeds_yolo_mask
+
+train: images/train
+val: images/val
+
+# Class names (edit these if you have different labels)
+names:
+  0: weed
+  1: rose
