@@ -81,9 +81,9 @@ Both trainings were run with the same augmentations and hyperparameters for a fa
 
 Both models were evaluated on unseen agricultural images to assess generalization.
 
-| YOLOv8s Predictions | YOLOv8s-seg Predictions |
-|---------------------|--------------------------|
-| ![pred-bb](../model_predictions/weeds-unlabeled-pred-yolov8s/IMG_4283.jpg) | ![pred-seg](../model_predictions/weeds-unlabeled-pred-yolov8s-seg/IMG_4283.jpg) |
+| YOLOv8s Predictions                     | YOLOv8s-seg Predictions                      |
+|-----------------------------------------|----------------------------------------------|
+| ![pred-bb](Images/yolov8s-IMG_4283.jpg) | ![pred-seg](Images/yolov8s-seg-IMG_4283.jpg) |
 
 ### **Analysis**
 

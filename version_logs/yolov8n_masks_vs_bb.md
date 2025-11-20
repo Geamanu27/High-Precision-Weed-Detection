@@ -79,9 +79,9 @@ Segmentation has lower mAP due to task difficulty and smaller dataset, but provi
 
 Both models were tested on unseen field images not included in training or validation.
 
-| YOLOv8n-bb Predictions                                                      | YOLOv8n-seg Predictions                                                         |
-|-----------------------------------------------------------------------------|---------------------------------------------------------------------------------|
-| ![IMG_4283](../model_predictions/weeds-unlabeled-pred-yolov8n/IMG_4283.jpg) | ![IMG_4283](../model_predictions/weeds-unlabeled-pred-yolov8n-seg/IMG_4283.jpg) |
+| YOLOv8n-bb Predictions                   | YOLOv8n-seg Predictions                      |
+|------------------------------------------|----------------------------------------------|
+| ![IMG_4283](Images/yolov8n-IMG_4283.jpg) | ![IMG_4283](Images/yolov8n-seg-IMG_4283.jpg) |
 
 ### **Analysis**
 
